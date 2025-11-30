@@ -3,8 +3,11 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <script src="https://www.gstatic.com/firebasejs/8.3.3/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <script src="work.js"></script>
+    
+
     <link rel="stylesheet" href="styles.css">
 
 
@@ -93,20 +96,16 @@
             <label for="end-time" data-lang="en" style="display:none;">End Time (Optional)</label>
             <label for="end-time" data-lang="de" style="display:none;">Endzeit (Optional)</label>
             <input id="end-time" type="datetime-local">
-
+<br>
             <div class="hint" data-lang="ar">اتركه فارغًا ليبقى التصويت مفتوحًا حتى الإغلاق اليدوي.</div>
             <div class="hint" data-lang="en" style="display:none;">Leave empty to keep the poll open until manually closed.</div>
             <div class="hint" data-lang="de" style="display:none;">Leer lassen, um die Umfrage offen zu halten, bis sie manuell geschlossen wird.</div>
-
-            <div class="actions">
-                <button id="create" data-lang="ar">إنشاء تصويت</button>
+<br>
+            <div class="actions"><button id="create" data-lang="ar">إنشاء تصويت</button>
                 <button id="create" data-lang="en" style="display:none;">Create Poll</button>
                 <button id="create" data-lang="de" style="display:none;">Umfrage erstellen</button>
-
-                <button id="create-firebase" class="secondary" data-lang="ar">إنشاء مع Firebase</button>
-                <button id="create-firebase" class="secondary" data-lang="en" style="display:none;">Create with Firebase</button>
-                <button id="create-firebase" class="secondary" data-lang="de" style="display:none;">Mit Firebase erstellen</button>
-            </div>
+                
+                </div>
 
             <!-- SHARE AREA -->
             <div id="share-area" class="share card" style="display:none;">
@@ -185,109 +184,11 @@
 
     </main>
 
-    <footer>
-        <span data-lang="ar">YusVote — نموذج MVP. للنسخة الحية استخدم Firebase أو سيرفر حقيقي.</span>
-        <span data-lang="en" style="display:none;">YusVote — MVP version. For live version, use Firebase or a real server.</span>
-        <span data-lang="de" style="display:none;">YusVote — MVP-Version. Für die Live-Version verwenden Sie Firebase oder einen echten Server.</span>
-    </footer>
+   
 
 </div>
 
 <script src="app.js"></script>
-<script type="module">
-  // ====== Firebase Initialization ======
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
-  import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyCLsKA8pYd27ffc5nWKReoX3XGgGfwKKEg",
-    authDomain: "yusvote-66f52.firebaseapp.com",
-    projectId: "yusvote-66f52",
-    storageBucket: "yusvote-66f52.firebasestorage.app",
-    messagingSenderId: "928161949172",
-    appId: "1:928161949172:web:9197ba8517b4c784f145a1"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-
-  // ====== إنشاء تصويت على Firebase ======
-  const createFirebaseBtn = document.querySelectorAll('#create-firebase');
-  createFirebaseBtn.forEach(btn => {
-    btn.addEventListener('click', async () => {
-      const title = document.getElementById('poll-title').value;
-      const desc = document.getElementById('poll-desc').value;
-      const optionsDiv = document.getElementById('options-list');
-      const options = Array.from(optionsDiv.children).map(opt => opt.textContent);
-
-      if (!title || options.length === 0) return alert("أدخل السؤال والخيارات!");
-
-      try {
-        const docRef = await addDoc(collection(db, "polls"), {
-          title,
-          desc,
-          options,
-          timestamp: new Date()
-        });
-        const shareLink = `${location.origin}?poll=${docRef.id}`;
-        document.getElementById('share-area').style.display = 'block';
-
-// توليد QR Code
-const qrContainer = document.getElementById("qr-img");
-qrContainer.innerHTML = ""; // يمسح أي QR قديم
-const qr = new QRCode(qrContainer, {
-  text: shareLink,
-  width: 180,
-  height: 180,
-});
-
-// زر نسخ الرابط
-const copyBtn = document.getElementById("copy-link");
-copyBtn.onclick = () => {
-    navigator.clipboard.writeText(shareLink)
-    .then(() => alert("تم نسخ الرابط!"))
-    .catch(err => console.error("خطأ في النسخ:", err));
-};
-
-// زر تحميل QR
-const downloadBtn = document.getElementById("download-qr");
-downloadBtn.onclick = () => {
-    const qrImg = qrContainer.querySelector('img');
-    if(qrImg) {
-        const a = document.createElement('a');
-        a.href = qrImg.src;
-        a.download = "yusvote_qr.png";
-        a.click();
-    }
-};
-
-
-      } catch (e) {
-        console.error("خطأ في إنشاء التصويت:", e);
-      }
-    });
-  });
-
-  // ====== إرسال تصويت ======
-  const voteBtn = document.getElementById('vote-btn');
-  if (voteBtn) {
-    voteBtn.addEventListener('click', async () => {
-      const pollId = new URLSearchParams(location.search).get("poll");
-      const selectedOption = document.querySelector('input[name="vote-option"]:checked');
-      if (!pollId || !selectedOption) return alert("اختر خيارًا");
-
-      try {
-        await addDoc(collection(db, `polls/${pollId}/votes`), {
-          choice: selectedOption.value,
-          timestamp: new Date()
-        });
-        document.getElementById('v-status').textContent = "تم تسجيل تصويتك!";
-      } catch (e) {
-        console.error("خطأ في تسجيل التصويت:", e);
-      }
-    });
-  }
-</script>
 
 <script>
 // ====== Language Switcher ======
@@ -315,7 +216,6 @@ switchLanguage('ar');
 langSwitcher.addEventListener('change', e => switchLanguage(e.target.value));
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
 
 </body>
 </html>
