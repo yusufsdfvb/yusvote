@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="work.js"></script>
+    
+
+    <link rel="stylesheet" href="styles.css">
+
+
+    <title>YusVote — تصويت سريع</title>
+    
+</head>
+<body>
+
+<div class="container">
+
+    <!-- LANGUAGE SWITCHER -->
+    <div style="text-align:center; margin:10px 0;">
+        <select id="language-switcher">
+            <option value="ar">العربية</option>
+            <option value="en">English</option>
+            <option value="de">Deutsch</option>
+        </select>
+    </div>
+
+    <!-- HEADER -->
+    <header class="header">
+        <h1 data-lang="ar">YusVote</h1>
+        <h1 data-lang="en" style="display:none;">YusVote</h1>
+        <h1 data-lang="de" style="display:none;">YusVote</h1>
+
+        <div class="tag" data-lang="ar">نسخة تجريبية</div>
+        <div class="tag" data-lang="en" style="display:none;">Beta Version</div>
+        <div class="tag" data-lang="de" style="display:none;">Beta-Version</div>
+    </header>
+
+    <main>
+
+        <!-- CREATOR SECTION -->
+        <section id="creator" class="card">
+            <h2 data-lang="ar">إنشاء تصويت جديد</h2>
+            <h2 data-lang="en" style="display:none;">Create New Poll</h2>
+            <h2 data-lang="de" style="display:none;">Neue Umfrage erstellen</h2>
+
+            <label for="poll-title" data-lang="ar">نص السؤال</label>
+            <label for="poll-title" data-lang="en" style="display:none;">Poll Question</label>
+            <label for="poll-title" data-lang="de" style="display:none;">Frage</label>
+            <input id="poll-title" type="text" data-placeholder-ar="مثال: من تريد انتخابه كعريف الصف؟"
+                   data-placeholder-en="?Example: Who should be class president"
+                   data-placeholder-de="?Beispiel: Wer soll Klassensprecher werden">
+
+            <label for="poll-desc" data-lang="ar">وصف (اختياري)</label>
+            <label for="poll-desc" data-lang="en" style="display:none;">Description (Optional)</label>
+            <label for="poll-desc" data-lang="de" style="display:none;">Beschreibung (Optional)</label>
+            <textarea id="poll-desc" rows="2" data-placeholder-ar="شرح قصير"
+                      data-placeholder-en="Short description"
+                      data-placeholder-de="Kurze Beschreibung"></textarea>
+
+            <label for="option-type" data-lang="ar">نوع الخيارات</label>
+            <label for="option-type" data-lang="en" style="display:none;">Option Type</label>
+            <label for="option-type" data-lang="de" style="display:none;">Option-Typ</label>
+
+            <select id="option-type">
+                <option value="number" data-lang="ar">أرقام (1, 2, 3)</option>
+                <option value="number" data-lang="en">Numbers (1, 2, 3)</option>
+                <option value="number" data-lang="de">Zahlen (1, 2, 3)</option>
+
+                <option value="letter" data-lang="ar">أحرف (A, B, C)</option>
+                <option value="letter" data-lang="en">Letters (A, B, C)</option>
+                <option value="letter" data-lang="de">Buchstaben (A, B, C)</option>
+
+                <option value="text" data-lang="ar">نصوص (الأسماء مباشرة)</option>
+                <option value="text" data-lang="en">Text (Names directly)</option>
+                <option value="text" data-lang="de">Text (Direkte Namen)</option>
+            </select>
+
+            <label data-lang="ar">الخيارات</label>
+            <label data-lang="en" style="display:none;">Options</label>
+            <label data-lang="de" style="display:none;">Optionen</label>
+            <div id="options-list" class="options-list"></div>
+
+            <div class="row">
+                <input id="new-option" type="text" data-placeholder-ar="أدخل خيار جديد ثم اضغط إضافة"
+                       data-placeholder-en="Enter new option and press Add"
+                       data-placeholder-de="Neue Option eingeben und auf Hinzufügen klicken">
+                <button id="add-option" data-lang="ar">إضافة</button>
+                <button id="add-option" data-lang="en" style="display:none;">Add</button>
+                <button id="add-option" data-lang="de" style="display:none;">Hinzufügen</button>
+            </div>
+
+            <label for="end-time" data-lang="ar">انتهاء التصويت (اختياري)</label>
+            <label for="end-time" data-lang="en" style="display:none;">End Time (Optional)</label>
+            <label for="end-time" data-lang="de" style="display:none;">Endzeit (Optional)</label>
+            <input id="end-time" type="datetime-local">
+<br>
+            <div class="hint" data-lang="ar">اتركه فارغًا ليبقى التصويت مفتوحًا حتى الإغلاق اليدوي.</div>
+            <div class="hint" data-lang="en" style="display:none;">Leave empty to keep the poll open until manually closed.</div>
+            <div class="hint" data-lang="de" style="display:none;">Leer lassen, um die Umfrage offen zu halten, bis sie manuell geschlossen wird.</div>
+<br>
+            <div class="actions"><button id="create" data-lang="ar">إنشاء تصويت</button>
+                <button id="create" data-lang="en" style="display:none;">Create Poll</button>
+                <button id="create" data-lang="de" style="display:none;">Umfrage erstellen</button>
+                
+                </div>
+
+            <!-- SHARE AREA -->
+            <div id="share-area" class="share card" style="display:none;">
+                <h3 data-lang="ar">شارك تصويتك</h3>
+                <h3 data-lang="en" style="display:none;">Share Your Poll</h3>
+                <h3 data-lang="de" style="display:none;">Teile deine Umfrage</h3>
+
+                <div class="share-row" data-lang="ar">
+                    الرابط: <span id="share-link" class="muted"></span>
+                </div>
+                <div class="share-row" data-lang="en" style="display:none;">
+                    Link: <span id="share-link" class="muted"></span>
+                </div>
+                <div class="share-row" data-lang="de" style="display:none;">
+                    Link: <span id="share-link" class="muted"></span>
+                </div>
+
+                <div class="share-buttons">
+                    <button id="copy-link" class="small" data-lang="ar">نسخ الرابط</button>
+                    <button id="copy-link" class="small" data-lang="en" style="display:none;">Copy Link</button>
+                    <button id="copy-link" class="small" data-lang="de" style="display:none;">Link kopieren</button>
+
+                    <button id="whatsapp" class="small">WhatsApp</button>
+                    <button id="telegram" class="small">Telegram</button>
+                    <button id="instagram" class="small">Instagram</button>
+                    <button id="download-qr" class="small" data-lang="ar">تحميل QR</button>
+                    <button id="download-qr" class="small" data-lang="en" style="display:none;">Download QR</button>
+                    <button id="download-qr" class="small" data-lang="de" style="display:none;">QR herunterladen</button>
+                </div>
+
+                <div class="qr center">
+                    <img id="qr-img" alt="QR Code">
+                </div>
+
+                <div class="hint" data-lang="ar">
+                    هذا الإصدار يعمل محليًا (التصويتات محفوظة في المتصفح).  
+                    لربط عدة مستخدمين استخدم Firebase أو خادم خلفي.
+                </div>
+                <div class="hint" data-lang="en" style="display:none;">
+                    This version works locally (polls saved in browser).  
+                    To connect multiple users, use Firebase or a backend server.
+                </div>
+                <div class="hint" data-lang="de" style="display:none;">
+                    Diese Version funktioniert lokal (Umfragen im Browser gespeichert).  
+                    Um mehrere Benutzer zu verbinden, verwenden Sie Firebase oder einen Backend-Server.
+                </div>
+            </div>
+        </section>
+
+        <!-- VOTER SECTION -->
+        <section id="voter" class="card" style="display:none;">
+            <h2 id="v-title" data-lang="ar"></h2>
+            <h2 id="v-title" data-lang="en" style="display:none;"></h2>
+            <h2 id="v-title" data-lang="de" style="display:none;"></h2>
+
+            <p id="v-desc" class="muted" data-lang="ar"></p>
+            <p id="v-desc" class="muted" data-lang="en" style="display:none;"></p>
+            <p id="v-desc" class="muted" data-lang="de" style="display:none;"></p>
+
+            <div id="v-options" class="v-options"></div>
+
+            <div class="row">
+                <button id="vote-btn" data-lang="ar">إرسال التصويت</button>
+                <button id="vote-btn" data-lang="en" style="display:none;">Submit Vote</button>
+                <button id="vote-btn" data-lang="de" style="display:none;">Abstimmung senden</button>
+                <div id="v-status" class="muted"></div>
+            </div>
+
+            <div id="results" class="results" style="display:none;">
+                <h3 data-lang="ar">النتائج</h3>
+                <h3 data-lang="en" style="display:none;">Results</h3>
+                <h3 data-lang="de" style="display:none;">Ergebnisse</h3>
+                <div id="results-list"></div>
+            </div>
+        </section>
+
+    </main>
+
+   
+
+</div>
+
+<script src="app.js"></script>
+
+<script>
+// ====== Language Switcher ======
+const langSwitcher = document.getElementById('language-switcher');
+const allTexts = document.querySelectorAll('[data-lang]');
+const allPlaceholders = document.querySelectorAll('input[data-placeholder-ar], textarea[data-placeholder-ar]');
+
+function switchLanguage(lang) {
+    // نصوص
+    allTexts.forEach(el => {
+        el.style.display = (el.getAttribute('data-lang') === lang) ? 'block' : 'none';
+    });
+
+    // placeholders
+    allPlaceholders.forEach(el => {
+        const ph = el.getAttribute(`data-placeholder-${lang}`);
+        if (ph) el.placeholder = ph;
+    });
+}
+
+// افتراضي عند التحميل
+switchLanguage('ar');
+
+// عند تغيير المستخدم للغة
+langSwitcher.addEventListener('change', e => switchLanguage(e.target.value));
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+</body>
+</html>
+
+
